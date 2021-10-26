@@ -1,0 +1,110 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    tools:context="com.example.android.tflitecamerademo.MainActivity"
+    android:weightSum="1"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    >
+
+
+    <TextView
+        android:id="@+id/tvlabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_btnRotateLeft"
+        android:layout_marginTop="20dp"
+        android:layout_centerInParent="true"
+        android:fontFamily="serif"
+        android:paddingLeft="20dp"
+        android:textColor="#000"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/infereceTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvlabel"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="10dp"
+        android:fontFamily="serif"
+        android:paddingLeft="20dp"
+        android:textColor="#000"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/ivCaptured"
+        android:layout_width="match_parent"
+        android:layout_height="450dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:background="@android:color/darker_gray"
+        android:scaleType="centerInside" />
+
+    <Button
+        android:id="@+id/id_btnRotateLeft"
+        style="@android:style/Widget.Button.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-20dp"
+        android:layout_below="@+id/ivCaptured"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="-15dp"
+        android:background="@drawable/ic_rotate_left_foreground"
+        android:elevation="0dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"
+        android:visibility="visible" />
+
+
+    <Button
+        android:id="@+id/id_btnSelect"
+        style="@android:style/Widget.Button.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="-10dp"
+        android:background="@drawable/ic_gallery_foreground"
+        android:elevation="0dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/id_btnPlay"
+        style="@android:style/Widget.Button.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="-10dp"
+        android:background="@drawable/ic_play_foreground"
+        android:elevation="0dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/id_btnCamera"
+        style="@android:style/Widget.Button.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="-10dp"
+        android:background="@drawable/ic_camera_foreground"
+        android:elevation="0dp"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"
+        android:visibility="visible" />
+
+<!--    <Button-->
+<!--        android:id="@+id/id_btnSpeak"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginBottom="-15dp"-->
+<!--        android:background="@drawable/ic_voice_foreground" />-->
+
+
+</RelativeLayout>
