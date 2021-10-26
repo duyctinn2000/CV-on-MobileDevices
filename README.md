@@ -1,2 +1,1 @@
-# dogdetection
-Dog Detection
+# Deploy Computer Vision models on Mobile Devices
