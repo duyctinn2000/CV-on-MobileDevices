@@ -1,4 +1,4 @@
-# TensorFlow Lite image classification iOS example application
+# TEMPLATE CODE FROM "TensorFlow Lite image classification iOS example application"
 
 ## Overview
 
