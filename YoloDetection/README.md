@@ -1,2 +1,1 @@
-# dogdetection
-Dog Detection
+#Deploy Yolo on Mobile devices
