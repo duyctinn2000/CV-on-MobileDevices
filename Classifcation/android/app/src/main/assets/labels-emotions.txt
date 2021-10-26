@@ -1,0 +1,6 @@
+Aggressive
+Angry - Uncomfortable
+Comfortable - Stable
+Happiness - Joy
+Sadness - Unstable
+Scared
