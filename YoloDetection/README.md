@@ -1,1 +1,1 @@
-#Deploy Yolo on Mobile devices
+Deploy Yolo on Mobile devices
