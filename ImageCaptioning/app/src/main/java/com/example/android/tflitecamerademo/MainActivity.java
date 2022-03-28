@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private static final int REQUEST_IMAGE_CAPTURE = 100;
     private static final int REQUEST_IMAGE_SELECT = 200;
-    private static final String IMAGE_DOG = "image.jpg";
+    private static final String IMAGE_DOG = "dog3.jpg";
     private static final String fileName = "output.jpg";
     private Button btnCamera;
     private Button btnSelect, btnRotateLeft;
@@ -42,8 +42,9 @@ public class MainActivity extends Activity {
     private ImageView ivCaptured;
     private TextView tvLabel, timeLabel;
     private Bitmap bmp;
-    private AT_Captioner captioner;
+    private Captioner captioner;
     private Captioner lstm_captioner;
+    private Attention_Captioner attention_captioner;
     private TextToSpeech tts;
     private String imgPath;
     private File mFile;
@@ -121,9 +122,9 @@ public class MainActivity extends Activity {
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String attention_result = captioner.predictImage(bmp);
-                //String lstm_result = lstm_captioner.predictImage(bmp);
-                onTaskCompleted("attention_result",attention_result);
+//                String attention_result = captioner.predictImage(bmp);
+                String lstm_result = captioner.predictImage(bmp);
+                onTaskCompleted("lstm_result",lstm_result);
             }
         });
 
@@ -156,8 +157,9 @@ public class MainActivity extends Activity {
 
         try
         {
-            captioner = new AT_Captioner(this);
-            lstm_captioner = new Captioner(this);
+            captioner = new Captioner(this);
+//            lstm_captioner = new Captioner(this);
+//            attention_captioner = new Attention_Captioner(this);
         }
         catch (Exception e)
         {
@@ -255,8 +257,9 @@ public class MainActivity extends Activity {
 //        String caption = "Attention: "+attention_result.split("\t")[0] + "\nLSTM: "+lstm_result.split("\t")[0];
         String inferTime = lstm_result.split("\t")[1];
         String caption = lstm_result.split("\t")[0];
-//        tvLabel.setText(caption);
-//        timeLabel.setText(inferTime);
+        Log.i("q23",caption);
+        tvLabel.setText(caption);
+        timeLabel.setText(inferTime);
 
         tvLabel.setText("Caption: " + caption);
         timeLabel.setText("Inference Time: "+inferTime+"s");
@@ -280,6 +283,7 @@ public class MainActivity extends Activity {
     {
         super.onDestroy();
         captioner.close();
-        lstm_captioner.close();
+//        lstm_captioner.close();
+//        attention_captioner.close();
     }
 }

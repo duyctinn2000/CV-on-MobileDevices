@@ -31,7 +31,7 @@ public interface Classifier {
         /**
          * A sortable score for how good the recognition is relative to others. Higher should be better.
          */
-        private final Float confidence;
+        private Float confidence;
 
         /**
          * Optional location within the source image for the location of the recognized object.
@@ -48,9 +48,15 @@ public interface Classifier {
         }
 
 
+        public void setConfidence(Float confidence) {
+            this.confidence = confidence;
+        }
+
         public Float getConfidence() {
             return confidence;
         }
+
+        public String getTitle() {return title;}
 
         @Override
         public String toString() {

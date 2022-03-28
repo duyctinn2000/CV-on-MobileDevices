@@ -1,0 +1,51 @@
+when owner came back home
+before sleep or lying together
+etc
+in front of toy, edible
+take a rest, entering own place(kennel sofa  bed..etc)
+take a walk or prepare a walk
+when hear strange sound
+during hydiene management(combing clipping_toenail washing etc)
+when looking other animals or stranger
+when meet another person or animal
+while take a walk or nosework
+pet a pet comfortable
+when apart from owner or left alone or being at strange place
+when touching body making nervous
+when touching belongings such as toys, food bowl
+when seeing another animals or strangers during taking a walk
+when washing
+when hear the strange sound or see a stranger
+when washing or touching body making nervous
+when a pet in the strange place or hear strange sound
+when get scolded
+when taking a walk
+when left alone or apart from owner
+when using strange stuff(beauty tools) to pet’s body
+when hearing ring-bells
+when riding a car
+walk_run
+grooming
+self_scratching
+lying_down
+raise_both_paws
+raising_one_paw
+mounting
+wagging_tail
+spinning_around
+sit_down
+self_shaking
+shadow_boxing
+approaching_own_head
+lowering_tail
+lying_down_showing_belly
+lying_side_down
+crouch_with_paw_hidden
+happiness/joy
+comfortable/stable
+sadness/unstable
+angry/uncomfortable
+aggressive
+scared
+inside
+outside

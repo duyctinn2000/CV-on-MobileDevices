@@ -91,9 +91,6 @@ public class EfficientNetClassifier implements Classifier {
                     d.nnapiDelegate = new NnApiDelegate();
                     options.addDelegate(d.nnapiDelegate);
                     options.setNumThreads(NUM_THREADS);
-//                    options.setUseNNAPI(false);
-//                    options.setAllowFp16PrecisionForFp32(true);
-//                    options.setAllowBufferHandleOutput(true);
                     options.setUseNNAPI(true);
                 }
             }
@@ -123,10 +120,7 @@ public class EfficientNetClassifier implements Classifier {
         d.imgData.order(ByteOrder.nativeOrder());
         d.intValues = new int[d.INPUT_SIZE * d.INPUT_SIZE];
 
-        d.output_box = (int) ((Math.pow((inputSize / 32), 2) + Math.pow((inputSize / 16), 2) + Math.pow((inputSize / 8), 2)) * 3);
-//        d.OUTPUT_WIDTH = output_width;
-//        d.MASKS = masks;
-//        d.ANCHORS = anchors;
+
         if (d.isModelQuantized){
             Tensor inpten = d.tfLite.getInputTensor(0);
             d.inp_scale = inpten.quantizationParams().getScale();
@@ -136,17 +130,9 @@ public class EfficientNetClassifier implements Classifier {
             d.oup_zero_point = oupten.quantizationParams().getZeroPoint();
         }
 
-        int[] shape = d.tfLite.getOutputTensor(0).shape();
-        int numClass = shape[shape.length - 1] - 5;
-        d.numClass = numClass;
-        d.outData = ByteBuffer.allocateDirect(d.output_box * (numClass + 5) * numBytesPerChannel);
-        d.outData.order(ByteOrder.nativeOrder());
         return d;
     }
 
-    public int getInputSize() {
-        return INPUT_SIZE;
-    }
     @Override
     public void enableStatLogging(final boolean logStats) {
     }
@@ -220,15 +206,6 @@ public class EfficientNetClassifier implements Classifier {
     //config yolo
     private int INPUT_SIZE = MainActivity.TF_OD_API_INPUT_SIZE;
 
-    //    private int[] OUTPUT_WIDTH;
-//    private int[][] MASKS;
-//    private int[] ANCHORS;
-    private  int output_box;
-
-    private static final float[] XYSCALE = new float[]{1.2f, 1.1f, 1.05f};
-
-    private static final int NUM_BOXES_PER_BLOCK = 3;
-
     // Number of threads in the java app
     private static final int NUM_THREADS = 1;
     private static boolean isNNAPI = false;
@@ -265,84 +242,6 @@ public class EfficientNetClassifier implements Classifier {
     private EfficientNetClassifier() {
     }
 
-    //non maximum suppression
-    protected ArrayList<Recognition> nms(ArrayList<Recognition> list) {
-        ArrayList<Recognition> nmsList = new ArrayList<Recognition>();
-
-        for (int k = 0; k < labels.size(); k++) {
-            //1.find max confidence per class
-            PriorityQueue<Recognition> pq =
-                    new PriorityQueue<Recognition>(
-                            50,
-                            new Comparator<Recognition>() {
-                                @Override
-                                public int compare(final Recognition lhs, final Recognition rhs) {
-                                    // Intentionally reversed to put high confidence at the head of the queue.
-                                    return Float.compare(rhs.getConfidence(), lhs.getConfidence());
-                                }
-                            });
-
-            for (int i = 0; i < list.size(); ++i) {
-                if (list.get(i).getDetectedClass() == k) {
-                    pq.add(list.get(i));
-                }
-            }
-
-            //2.do non maximum suppression
-            while (pq.size() > 0) {
-                //insert detection with max confidence
-                Recognition[] a = new Recognition[pq.size()];
-                Recognition[] detections = pq.toArray(a);
-                Recognition max = detections[0];
-                nmsList.add(max);
-                pq.clear();
-
-                for (int j = 1; j < detections.length; j++) {
-                    Recognition detection = detections[j];
-                    RectF b = detection.getLocation();
-                    if (box_iou(max.getLocation(), b) < mNmsThresh) {
-                        pq.add(detection);
-                    }
-                }
-            }
-        }
-        return nmsList;
-    }
-
-    protected float mNmsThresh = 0.6f;
-
-    protected float box_iou(RectF a, RectF b) {
-        return box_intersection(a, b) / box_union(a, b);
-    }
-
-    protected float box_intersection(RectF a, RectF b) {
-        float w = overlap((a.left + a.right) / 2, a.right - a.left,
-                (b.left + b.right) / 2, b.right - b.left);
-        float h = overlap((a.top + a.bottom) / 2, a.bottom - a.top,
-                (b.top + b.bottom) / 2, b.bottom - b.top);
-        if (w < 0 || h < 0) return 0;
-        float area = w * h;
-        return area;
-    }
-
-    protected float box_union(RectF a, RectF b) {
-        float i = box_intersection(a, b);
-        float u = (a.right - a.left) * (a.bottom - a.top) + (b.right - b.left) * (b.bottom - b.top) - i;
-        return u;
-    }
-
-    protected float overlap(float x1, float w1, float x2, float w2) {
-        float l1 = x1 - w1 / 2;
-        float l2 = x2 - w2 / 2;
-        float left = l1 > l2 ? l1 : l2;
-        float r1 = x1 + w1 / 2;
-        float r2 = x2 + w2 / 2;
-        float right = r1 < r2 ? r1 : r2;
-        return right - left;
-    }
-
-    protected static final int BATCH_SIZE = 1;
-    protected static final int PIXEL_SIZE = 3;
 
     /**
      * Writes Image data into a {@code ByteBuffer}.
@@ -392,7 +291,6 @@ public class EfficientNetClassifier implements Classifier {
         float[] coor;
         for (int i = 0; i < (int) num_detections[0]; i++) {
             final float[] all_label = new float[labels.size()];
-            //Log.i("456", String.valueOf(scores[0][i]));
             if (scores[0][i]>getObjThresh() && classes[0][i] == 17) {
                 coor = bboxes[0][i];
                 final RectF rectF = new RectF(
@@ -403,116 +301,8 @@ public class EfficientNetClassifier implements Classifier {
                 detections.add(new Recognition("" + i, labels.get((int)classes[0][i]),scores[0][i],rectF,(int) classes[0][i]));
 
             }
-
         }
         return detections;
-//
-//        for (int i = 0; i < gridWidth;i++){
-//            float maxClass = 0;
-//            int detectedClass = -1;
-//            final float[] classes = new float[labels.size()];
-//            for (int c = 0;c< labels.size();c++){
-//                classes [c] = out_score[0][i][c];
-//            }
-//            for (int c = 0;c<labels.size();++c){
-//                if (classes[c] > maxClass){
-//                    detectedClass = c;
-//                    maxClass = classes[c];
-//                }
-//            }
-//            final float score = maxClass;
-//            if (score > getObjThresh() && labels.get(detectedClass).equals("dog")){
-//                final float xPos = bboxes[0][i][0];
-//                final float yPos = bboxes[0][i][1];
-//                final float w = bboxes[0][i][2];
-//                final float h = bboxes[0][i][3];
-//                final RectF rectF = new RectF(
-//                        Math.max(0, xPos - w / 2),
-//                        Math.max(0, yPos - h / 2),
-//                        Math.min(bitmap.getWidth() - 1, xPos + w / 2),
-//                        Math.min(bitmap.getHeight() - 1, yPos + h / 2));
-//                detections.add(new Recognition("" + i, labels.get(detectedClass),score,rectF,detectedClass ));
-//            }
-//        }
-//        return detections;
     }
 
-    public ArrayList<Recognition> recognizeImage_old(Bitmap bitmap) {
-        ByteBuffer byteBuffer_ = convertBitmapToByteBuffer(bitmap);
-
-        Map<Integer, Object> outputMap = new HashMap<>();
-
-//        float[][][] outbuf = new float[1][output_box][labels.size() + 5];
-        outData.rewind();
-        outputMap.put(0, outData);
-        Log.d("YoloV5Classifier", "mObjThresh: " + getObjThresh());
-
-        Object[] inputArray = {imgData};
-        tfLite.runForMultipleInputsOutputs(inputArray, outputMap);
-
-        ByteBuffer byteBuffer = (ByteBuffer) outputMap.get(0);
-        byteBuffer.rewind();
-
-        ArrayList<Recognition> detections = new ArrayList<Recognition>();
-
-        float[][][] out = new float[1][output_box][numClass + 5];
-        Log.d("YoloV5Classifier", "out[0] detect start");
-        for (int i = 0; i < output_box; ++i) {
-            for (int j = 0; j < numClass + 5; ++j) {
-                if (isModelQuantized){
-                    out[0][i][j] = oup_scale * (((int) byteBuffer.get() & 0xFF) - oup_zero_point);
-                }
-                else {
-                    out[0][i][j] = byteBuffer.getFloat();
-                }
-            }
-            // Denormalize xywh
-            for (int j = 0; j < 4; ++j) {
-                out[0][i][j] *= getInputSize();
-            }
-        }
-        for (int i = 0; i < output_box; ++i){
-            final int offset = 0;
-            final float confidence = out[0][i][4];
-            int detectedClass = -1;
-            float maxClass = 0;
-
-            final float[] classes = new float[labels.size()];
-            for (int c = 0; c < labels.size(); ++c) {
-                classes[c] = out[0][i][5 + c];
-            }
-
-            for (int c = 0; c < labels.size(); ++c) {
-                if (classes[c] > maxClass) {
-                    detectedClass = c;
-                    maxClass = classes[c];
-                }
-            }
-
-            final float confidenceInClass = maxClass * confidence;
-            if (confidenceInClass > getObjThresh() &&  labels.get(detectedClass).equals("dog")) {
-                final float xPos = out[0][i][0];
-                final float yPos = out[0][i][1];
-
-                final float w = out[0][i][2];
-                final float h = out[0][i][3];
-                Log.d("YoloV5Classifier",
-                        Float.toString(xPos) + ',' + yPos + ',' + w + ',' + h);
-
-                final RectF rect =
-                        new RectF(
-                                Math.max(0, xPos - w / 2),
-                                Math.max(0, yPos - h / 2),
-                                Math.min(bitmap.getWidth() - 1, xPos + w / 2),
-                                Math.min(bitmap.getHeight() - 1, yPos + h / 2));
-                detections.add(new Recognition("" + offset, labels.get(detectedClass),
-                        confidenceInClass, rect, detectedClass));
-            }
-        }
-
-        Log.d("YoloV5Classifier", "detect end");
-        final ArrayList<Recognition> recognitions = nms(detections);
-//        final ArrayList<Recognition> recognitions = detections;
-        return recognitions;
-    }
 }

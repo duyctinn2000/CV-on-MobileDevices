@@ -131,37 +131,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        efficientButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                yolov4TinyButton.setBackgroundColor(getResources().getColor(R.color.tfe_color_accent));
-                yolov5Button.setBackgroundColor(getResources().getColor(R.color.tfe_color_accent));
-                efficientButton.setBackgroundColor(getResources().getColor(R.color.tfe_color_primary));
-                MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
-                TF_OD_API_INPUT_SIZE = 640;
-                TF_OD_API_IS_QUANTIZED = true; //false;
-                TF_OD_API_MODEL_FILE =  "efficientdet_lite.tflite"; //" "yolov4-416-fp32.tflite";
-                cropBitmap = Utils.processBitmap(defaultBitmap, TF_OD_API_INPUT_SIZE);
-                defaultBitmap = cropBitmap.copy(cropBitmap.getConfig(),true);
-                imageView.setImageBitmap(cropBitmap);
-                try {
-                    detector =
-                            EfficientNetClassifier.create(
-                                    getAssets(),
-                                    TF_OD_API_MODEL_FILE,
-                                    TF_OD_API_LABELS_FILE,
-                                    TF_OD_API_IS_QUANTIZED);
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                    LOGGER.e(e, "Exception initializing classifier!");
-                    Toast toast =
-                            Toast.makeText(
-                                    getApplicationContext(), "Classifier could not be initialized", Toast.LENGTH_SHORT);
-                    toast.show();
-                    finish();
-                }
-            }
-        });
+        try {
+            detector =
+                    EfficientNetClassifier.create(
+                            getAssets(),
+                            TF_OD_API_MODEL_FILE,
+                            TF_OD_API_LABELS_FILE,
+                            TF_OD_API_IS_QUANTIZED);
+        } catch (final IOException e) {
+            e.printStackTrace();
+            LOGGER.e(e, "Exception initializing classifier!");
+            Toast toast =
+                    Toast.makeText(
+                            getApplicationContext(), "Classifier could not be initialized", Toast.LENGTH_SHORT);
+            toast.show();
+            finish();
+        }
+
+
 
         defaultButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -201,9 +188,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 resultText.setText("");
                 ImagePicker.with(MainActivity.this)
-                        .crop()	    			//Crop image(Optional), Check Customization for more option
-//                        .compress(1024)			//Final image size will be less than 1 MB(Optional)
-//                        .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                        .crop()
                         .start();
             }
         });
@@ -253,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK) {
-            //Image Uri will not be null for RESULT_OK
             Uri uri = data.getData();
 
             try {
@@ -275,13 +259,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final Logger LOGGER = new Logger();
 
-    public static int TF_OD_API_INPUT_SIZE = 640; //320
+    public static int TF_OD_API_INPUT_SIZE = 224; //320
 
     private static boolean TF_OD_API_IS_QUANTIZED = false; //false;
 
-    private static String TF_OD_API_MODEL_FILE =  "yolov4-tiny-640-fp16.tflite";
+    private static String TF_OD_API_MODEL_FILE =  "efficientdet-d0-petface-fp16.tflite";
 
-    private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/coco.txt";
+    private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/labels.txt";
 
     // Minimum detection confidence to track a detection.
     private static final boolean MAINTAIN_ASPECT = false;
@@ -349,15 +333,10 @@ public class MainActivity extends AppCompatActivity {
                 numberOfObject++;
                 canvas.drawText(String.format("%.2f", result.getConfidence()), (int) location.left+5, location.top+20, fgPaint);
                 canvas.drawRect(location, paint);
-//                cropToFrameTransform.mapRect(location);
-//
-//                result.setLocation(location);
-//                mappedRecognitions.add(result);
             }
         }
         resultText.setText("Objects: " + String.valueOf(numberOfObject) + "\nInference time: "+String.valueOf(inferenceTime)+"ms");
-//        tracker.trackResults(mappedRecognitions, new Random().nextInt());
-//        trackingOverlay.postInvalidate();
+
         imageView.setImageBitmap(bitmap);
     }
 }

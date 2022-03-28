@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		173273EA2721B7B1007F7702 /* yolov5-full.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 173273E82721B7B1007F7702 /* yolov5-full.tflite */; };
-		173273EB2721B7B1007F7702 /* labels-full.txt in Resources */ = {isa = PBXBuildFile; fileRef = 173273E92721B7B1007F7702 /* labels-full.txt */; };
+		1784ED792734F40D009ABEF9 /* labels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1784ED782734F40D009ABEF9 /* labels.txt */; };
+		1784ED7B2734F440009ABEF9 /* yolov5-m.tflite in Resources */ = {isa = PBXBuildFile; fileRef = 1784ED7A2734F440009ABEF9 /* yolov5-m.tflite */; };
 		AAAB096E218981FA0015A1F2 /* CVPixelBufferExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAB096D218981FA0015A1F2 /* CVPixelBufferExtension.swift */; };
 		AABFCBB2213FE0B100C0A67B /* ModelDataHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABFCBB1213FE0B100C0A67B /* ModelDataHandler.swift */; };
 		AAE79E5A213521DA00E7AC1F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE79E59213521DA00E7AC1F /* AppDelegate.swift */; };
@@ -21,8 +21,8 @@
 
 /* Begin PBXFileReference section */
 		14CAE291077E814D03E79CB3 /* Pods-ImageClassification.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageClassification.release.xcconfig"; path = "Target Support Files/Pods-ImageClassification/Pods-ImageClassification.release.xcconfig"; sourceTree = "<group>"; };
-		173273E82721B7B1007F7702 /* yolov5-full.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; name = "yolov5-full.tflite"; path = "../../../../../../../../../Downloads/yolov5-full/yolov5-full.tflite"; sourceTree = "<group>"; };
-		173273E92721B7B1007F7702 /* labels-full.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "labels-full.txt"; path = "../../../../../../../../../Downloads/yolov5-full/labels-full.txt"; sourceTree = "<group>"; };
+		1784ED782734F40D009ABEF9 /* labels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = labels.txt; sourceTree = "<group>"; };
+		1784ED7A2734F440009ABEF9 /* yolov5-m.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "yolov5-m.tflite"; sourceTree = "<group>"; };
 		4E76B784C111DBC26EEEC02A /* Pods_ImageClassification.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ImageClassification.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAAB096D218981FA0015A1F2 /* CVPixelBufferExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVPixelBufferExtension.swift; sourceTree = "<group>"; };
 		AABFCBB1213FE0B100C0A67B /* ModelDataHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelDataHandler.swift; sourceTree = "<group>"; };
@@ -68,8 +68,8 @@
 		AA5FEB7A21355CCC00F9BD4B /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				173273E92721B7B1007F7702 /* labels-full.txt */,
-				173273E82721B7B1007F7702 /* yolov5-full.tflite */,
+				1784ED7A2734F440009ABEF9 /* yolov5-m.tflite */,
+				1784ED782734F40D009ABEF9 /* labels.txt */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -174,7 +174,7 @@
 				TargetAttributes = {
 					AAE79E55213521DA00E7AC1F = {
 						CreatedOnToolsVersion = 9.4.1;
-						LastSwiftMigration = 1110;
+						LastSwiftMigration = 1300;
 					};
 				};
 			};
@@ -201,10 +201,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				173273EA2721B7B1007F7702 /* yolov5-full.tflite in Resources */,
+				1784ED7B2734F440009ABEF9 /* yolov5-m.tflite in Resources */,
 				AAE79E64213521DB00E7AC1F /* LaunchScreen.storyboard in Resources */,
+				1784ED792734F40D009ABEF9 /* labels.txt in Resources */,
 				AAE79E61213521DB00E7AC1F /* Assets.xcassets in Resources */,
-				173273EB2721B7B1007F7702 /* labels-full.txt in Resources */,
 				AAE79E5F213521DA00E7AC1F /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

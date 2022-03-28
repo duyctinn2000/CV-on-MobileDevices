@@ -11,6 +11,8 @@ class ViewController: UIViewController {
   // Holds the results at any time
   private var result: Result?
     private var buff: CVPixelBuffer?
+    private var interval_total: TimeInterval = 0.0
+private var startDate = Date()
 
     @IBOutlet weak var imageView: UIImageView!
     // MARK: Controllers that manage functionality
@@ -33,10 +35,11 @@ class ViewController: UIViewController {
     }
   }
     @objc func buttonClicked() {
-        
+        startDate = Date()
         DispatchQueue.global().async {
             self.recognizeImage(pixelBuffer: self.buff!)
         }
+        
     }
     
     @objc func recognizeImage(pixelBuffer: CVPixelBuffer) {
@@ -67,12 +70,14 @@ class ViewController: UIViewController {
                   self.imageView.addSubview(box)
                   }
               print(self.result?.inferenceTime ?? 0)
-              self.countLabel.text="Inference time: " +  String(format: "%.2fms", self.result?.inferenceTime ?? 0.02)
+              self.interval_total = Date().timeIntervalSince(self.startDate) * 1000
+              self.countLabel.text="Inference time: " +  String(format: "%.2fms", self.interval_total ?? 0.02)
+//              self.countLabel.text="Inference time: " +  String(format: "%.2fms", self.result?.inferenceTime ?? 0.02)
           }
       }
 
   @objc func setImage() {
-    guard let image = UIImage(named: "dog") else {
+    guard let image = UIImage(named: "demo_3_1") else {
       return
     }
 

@@ -1,4 +1,4 @@
-# TF Lite Android Image Classifier App Example
+# TEMPLATE CODE FROM "TF Lite Android Image Classifier App Example"
 
 A simple Android example that demonstrates image classification using the camera.
 

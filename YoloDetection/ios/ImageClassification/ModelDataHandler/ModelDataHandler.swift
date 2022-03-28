@@ -30,13 +30,94 @@ struct Inference {
   let className: String
 }
 
+struct Heap<Element> {
+  var elements : [Element]
+  let priorityFunction : (Element, Element) -> Bool
+
+  // TODO: priority queue functions
+  // TODO: helper functions
+    var isEmpty : Bool {
+      return elements.isEmpty
+    }
+
+    var count : Int {
+      return elements.count
+    }
+    func peek() -> Element? {
+      return elements.first
+    }
+    func isRoot(_ index: Int) -> Bool {
+      return (index == 0)
+    }
+
+    func leftChildIndex(of index: Int) -> Int {
+      return (2 * index) + 1
+    }
+
+    func rightChildIndex(of index: Int) -> Int {
+      return (2 * index) + 2
+    }
+
+    func parentIndex(of index: Int) -> Int {
+      return (index - 1) / 2
+    }
+    func isHigherPriority(at firstIndex: Int, than secondIndex: Int) -> Bool {
+        return priorityFunction(elements[firstIndex], elements[secondIndex])
+    }
+    func highestPriorityIndex(of parentIndex: Int, and childIndex: Int) -> Int {
+      guard childIndex < count && isHigherPriority(at: childIndex, than: parentIndex)
+        else { return parentIndex }
+      return childIndex
+    }
+        
+    func highestPriorityIndex(for parent: Int) -> Int {
+      return highestPriorityIndex(of: highestPriorityIndex(of: parent, and: leftChildIndex(of: parent)), and: rightChildIndex(of: parent))
+    }
+    mutating func swapElement(at firstIndex: Int, with secondIndex: Int) {
+      guard firstIndex != secondIndex
+        else { return }
+        elements.swapAt(firstIndex, secondIndex)
+    }
+    mutating func enqueue(_ element: Element) {
+      elements.append(element)
+      siftUp(elementAtIndex: count - 1)
+    }
+    mutating func siftUp(elementAtIndex index: Int) {
+      let parent = parentIndex(of: index) // 1
+      guard !isRoot(index), // 2
+        isHigherPriority(at: index, than: parent) // 3
+        else { return }
+      swapElement(at: index, with: parent) // 4
+      siftUp(elementAtIndex: parent) // 5
+    }
+    mutating func dequeue() -> Element? {
+      guard !isEmpty // 1
+        else { return nil }
+      swapElement(at: 0, with: count - 1) // 2
+      let element = elements.removeLast() // 3
+      if !isEmpty { // 4
+        siftDown(elementAtIndex: 0) // 5
+      }
+      return element // 6
+    }
+    mutating func siftDown(elementAtIndex index: Int) {
+      let childIndex = highestPriorityIndex(for: index) // 1
+      if index == childIndex { // 2
+        return
+      }
+      swapElement(at: index, with: childIndex) // 3
+      siftDown(elementAtIndex: childIndex)
+    }
+}
+
+
 /// Information about a model file or labels file.
 typealias FileInfo = (name: String, extension: String)
 
 /// Information about the MobileNet model.
 enum MobileNet {
-  static let modelInfo: FileInfo = (name: "yolov5-full", extension: "tflite")
-  static let labelsInfo: FileInfo = (name: "labels-full", extension: "txt")
+  static let modelInfo: FileInfo = (name: "yolov5-m", extension: "tflite")
+  static let labelsInfo: FileInfo = (name: "labels", extension: "txt")
 }
 
 /// This class handles all data preprocessing and makes calls to run inference on a given frame
@@ -238,35 +319,45 @@ class ModelDataHandler : NSObject {
   private func nms(results: [Inference]) -> [Inference] {
       
       var nmsList : [Inference] = [];
-      var pqList : [Inference] = [];
+//      var pqList : [Inference] = [];
+      var pqList = Heap<Inference>(elements: [], priorityFunction: {
+              (a, b) in
+          return a.confidence > b.confidence
+          })
 
       for k in (0..<self.numClass) {
+          pqList.elements=[]
           //1.find max confidence per class
-          pqList.removeAll()
           
           for i in (0..<results.count) {
               if (results[i].className == labels[k]) {
-                  pqList.append(results[i])
+                  pqList.enqueue(results[i])
               }
               
           }
           
-          pqList.sort {$0.confidence>$1.confidence}
+//          pqList.sort {$0.confidence>$1.confidence}
           while (pqList.count>0) {
-              let max : Inference = pqList[0]
+              let max : Inference = pqList.dequeue() ?? Inference(rect: CGRect.zero,confidence: 0,className: "123")
               nmsList.append(max)
-              var tempList : [Inference] = [];
-              for j in (1..<pqList.count) {
-                  let detection : Inference = pqList[j]
-                  let b : CGRect = detection.rect;
-                  
+//              var tempList = Heap<Inference>(elements: [], priorityFunction: {
+//                  (a, b) in
+//              return a.confidence > b.confidence
+//              })
+              var detections : [Inference] = [];
+              while (pqList.count>0) {
+                  detections.append(pqList.dequeue() ?? Inference(rect: CGRect.zero,confidence: 0,className: "123") )
+              }
+              pqList.elements=[]
+//                  let detection : Inference = pqList.dequeue() ?? Inference(rect: CGRect.zero,confidence: 0,className: "123")
+              
+              for  j in (0..<detections.count) {
+                  let b : CGRect = detections[j].rect;
                   if (self.box_iou(a: max.rect,b: b) < self.mNmsThresh) {
-                      tempList.append(detection)
+                      pqList.enqueue(detections[j])
                   }
               }
-              
-            pqList = tempList.sorted{$0.confidence>$1.confidence}
-              
+//            pqList = tempList
           }
       }
       return nmsList;

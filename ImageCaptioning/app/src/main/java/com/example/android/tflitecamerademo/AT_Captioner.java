@@ -273,7 +273,7 @@ public class AT_Captioner {
 
         for(int i=0;i<hiden_feed[0].length;i++)
         {
-            hiden_feed[0][i] = 1;
+            hiden_feed[0][i] = 0;
         }
 
         input_feed[0][0] = words.get(words.size() - 1);

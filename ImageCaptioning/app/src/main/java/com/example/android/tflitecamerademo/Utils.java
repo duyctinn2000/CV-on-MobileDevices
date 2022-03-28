@@ -1,22 +1,15 @@
 package com.example.android.tflitecamerademo;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.os.Environment;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 
 public class Utils {
 

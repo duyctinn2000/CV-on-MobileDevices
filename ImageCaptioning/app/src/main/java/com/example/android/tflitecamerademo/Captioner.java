@@ -10,11 +10,17 @@ import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 
+import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.gpu.CompatibilityList;
 import org.tensorflow.lite.gpu.GpuDelegate;
 
 
 import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.support.common.TensorOperator;
+import org.tensorflow.lite.support.common.ops.NormalizeOp;
+import org.tensorflow.lite.support.image.ImageProcessor;
+import org.tensorflow.lite.support.image.TensorImage;
+import org.tensorflow.lite.support.image.ops.ResizeOp;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -45,18 +51,31 @@ public class Captioner {
     // A ByteBuffer to hold image data, to be feed into Tensorflow Lite as inputs.
     private long [] input_feed = null;
     private float [][] state_feed = null;
-    private static final int NUM_THREADS = 2;
+
+    private final boolean isQuantized = false;
+
+    private static final int NUM_THREADS = 4;
+
+    private static float IMAGE_MEAN = 0f;
+
+    private static float IMAGE_STD = 256.0f;
+
+    /**
+     * Float model does not need dequantization in the post-processing. Setting mean and std as 0.0f
+     * and 1.0f, repectively, to bypass the normalization.
+     */
+    private static float PROBABILITY_MEAN = 0.0f;
+
+    private static float PROBABILITY_STD = 1.0f;
 
     private float [][] softmax;
     private float [][] lstm_state;
     private float [][] initial_state;
 
-    private final float IMAGE_MEAN = 0;
-
-    private final float IMAGE_STD = 256.0f;
     private final int IMAGE_SIZE = 346;
     private ByteBuffer imgData;
     private int[] intValues;
+    private TensorImage inputCNNBuffer;
 
 
     Vocabulary vocabulary;
@@ -80,6 +99,17 @@ public class Captioner {
 //            // if the GPU is not supported, run on 4 threads
 //            tfliteOptions_lstm.setNumThreads(NUM_THREADS);
 //        }
+        if (isQuantized) {
+            IMAGE_MEAN = 0.0f;
+            IMAGE_STD = 1.0f;
+            PROBABILITY_MEAN = 0.0f;
+            PROBABILITY_STD = 255.0f;
+        } else {
+            IMAGE_MEAN = 127.5f;
+            IMAGE_STD = 127.5f;
+            PROBABILITY_MEAN = 0.0f;
+            PROBABILITY_STD = 1.0f;
+        }
         tfliteOptions_lstm.setNumThreads(NUM_THREADS);
         tfliteModel = loadModelFile(activity, inceptionModelPath);
         tflite = new Interpreter(tfliteModel, tfliteOptions);
@@ -90,6 +120,13 @@ public class Captioner {
 
         Log.d(TAG, "Created a Tensorflow Lite Image Classifier.");
 
+        int imageTensorIndex = 0;
+        int[] imageShape = tflite.getInputTensor(imageTensorIndex).shape(); // {1, height, width, 3}
+
+        DataType imageDataType = tflite.getInputTensor(imageTensorIndex).dataType();
+        // Creates the input tensor.
+        inputCNNBuffer = new TensorImage(imageDataType);
+
         imgData = ByteBuffer.allocateDirect(1 * IMAGE_SIZE * IMAGE_SIZE * 3 * 4);
         imgData.order(ByteOrder.nativeOrder());
         intValues = new int[IMAGE_SIZE * IMAGE_SIZE];
@@ -97,7 +134,7 @@ public class Captioner {
         input_feed = new long[1];
         state_feed = new float[1][1024];
 
-        softmax = new float[1][12000];
+        softmax = new float[1][150];
         lstm_state = new float[1][1024];
         initial_state = new float[1][1024];
 
@@ -155,6 +192,29 @@ public class Captioner {
         return "lstm.tflite";
     }
 
+    private static TensorOperator getPostprocessNormalizeOp() {
+        return new NormalizeOp(PROBABILITY_MEAN, PROBABILITY_STD);
+    }
+
+    protected TensorOperator getPreprocessNormalizeOp() {
+        return new NormalizeOp(IMAGE_MEAN, IMAGE_STD);
+    }
+
+    private TensorImage loadImage(final Bitmap bitmap) {
+        // Loads bitmap into a TensorImage.
+        inputCNNBuffer.load(bitmap);
+
+        // Creates processor for the TensorImage.
+        int cropSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
+        // TODO(b/143564309): Fuse ops inside ImageProcessor.
+        // TODO: Define an ImageProcessor from TFLite Support Library to do preprocessing
+        ImageProcessor imageProcessor =
+                new ImageProcessor.Builder()
+                        .add(new ResizeOp(IMAGE_SIZE, IMAGE_SIZE, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+                        .add(getPreprocessNormalizeOp())
+                        .build();
+        return imageProcessor.process(inputCNNBuffer);
+    }
 
     private String runInference(){
         Map<Integer, Object> outputs_cnn = new TreeMap<Integer, Object>();
@@ -172,10 +232,9 @@ public class Captioner {
         outputs_cnn.put(tflite.getOutputIndex("import/lstm/initial_state"), initial_state);
 
         Log.d(TAG, "outputs complete");
-        tflite.runForMultipleInputsOutputs(inputs_cnn, outputs_cnn);
+        tflite.run(inputCNNBuffer.getBuffer(), initial_state);
 
-
-        int maxCaptionLength = 20;
+        int maxCaptionLength = 40;
         List<Integer> words = new ArrayList<Integer>();
         // TODO - replace with vocab.start_id
         words.add(vocabulary.getStartIndex());
@@ -256,9 +315,9 @@ public class Captioner {
     public String predictImage(Bitmap origImg) {
         //Log.d(TAG, "predictImage: imgPath=" + imgPath);
         //Bitmap origImg = BitmapFactory.decodeFile(imgPath);
-        Bitmap img_346 = Utils.processBitmap(origImg, IMAGE_SIZE);
-        imgData = convertBitmapToByteBuffer(img_346);
-
+//        Bitmap img_346 = Utils.processBitmap(origImg, IMAGE_SIZE);
+//        imgData = convertBitmapToByteBuffer(img_346);
+        inputCNNBuffer = loadImage(origImg);
         return classifyFrame();
     }
 
@@ -306,12 +365,12 @@ class Vocabulary
 
     public int getStartIndex()
     {
-        return 1;
+        return 6;
     }
 
     public int getEndIndex()
     {
-        return 2;
+        return 7;
     }
 
     public String getWordAtIndex(int index)
